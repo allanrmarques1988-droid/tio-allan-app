@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --color-gold: #FFD700;
+  --color-gold-dark: #B8860B;
+  --color-premium-black: #050505;
+  --color-premium-blue: #0A0F1E;
+}
+
+@layer base {
+  body {
+    @apply bg-premium-black text-white font-sans overflow-x-hidden;
+  }
+  
+  img {
+    @apply max-w-full h-auto;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply break-words;
+  }
+}
+
+.premium-card {
+  @apply bg-white/5 border border-white/10 rounded-[32px] backdrop-blur-xl shadow-2xl shadow-black/50;
+}
+
+.gold-button {
+  @apply bg-gold text-black font-black uppercase tracking-tighter py-4 px-8 rounded-2xl hover:bg-gold-dark transition-all active:scale-[0.98] shadow-lg shadow-gold/20;
+}

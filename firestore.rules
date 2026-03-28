@@ -1,0 +1,161 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required, email format)
+    //   - displayName: string (optional)
+    //   - role: string (required, 'admin' or 'member')
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: courses
+    // Fields:
+    //   - title: string (required)
+    //   - description: string (required)
+    //   - thumbnailUrl: string (optional, URL format)
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: courses/{courseId}/modules
+    // Fields:
+    //   - courseId: string (required)
+    //   - title: string (required)
+    //   - order: number (required)
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: courses/{courseId}/modules/{moduleId}/lessons
+    // Fields:
+    //   - courseId: string (required)
+    //   - moduleId: string (required)
+    //   - title: string (required)
+    //   - videoUrl: string (required, URL format)
+    //   - description: string (optional)
+    //   - order: number (required)
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: progress
+    // Fields:
+    //   - userId: string (required)
+    //   - lessonId: string (required)
+    //   - courseId: string (required)
+    //   - completedAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "allanrmarques1988@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'role', 'createdAt']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             data.email is string && isValidEmail(data.email) &&
+             data.role in ['admin', 'member'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidCourse(data) {
+      return hasOnlyAllowedFields(['title', 'description', 'thumbnailUrl', 'createdAt']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.description is string && data.description.size() < 2000 &&
+             (!('thumbnailUrl' in data) || isValidUrl(data.thumbnailUrl)) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidModule(data) {
+      return hasOnlyAllowedFields(['courseId', 'title', 'order', 'createdAt']) &&
+             data.courseId is string &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.order is number &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidLesson(data) {
+      return hasOnlyAllowedFields(['courseId', 'moduleId', 'title', 'videoUrl', 'description', 'order', 'createdAt']) &&
+             data.courseId is string &&
+             data.moduleId is string &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.videoUrl is string && isValidUrl(data.videoUrl) &&
+             (!('description' in data) || (data.description is string && data.description.size() < 5000)) &&
+             data.order is number &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidProgress(data) {
+      return hasOnlyAllowedFields(['userId', 'lessonId', 'courseId', 'completedAt']) &&
+             data.userId == request.auth.uid &&
+             data.lessonId is string &&
+             data.courseId is string &&
+             data.completedAt is timestamp;
+    }
+
+    // ===============================================================
+    // Match Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
+                    (isOwner(userId) && request.resource.data.role == 'member' || isAdmin());
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && 
+                    ((isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin());
+    }
+
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidCourse(request.resource.data);
+
+      match /modules/{moduleId} {
+        allow read: if true;
+        allow write: if isAdmin() && isValidModule(request.resource.data);
+
+        match /lessons/{lessonId} {
+          allow read: if true;
+          allow write: if isAdmin() && isValidLesson(request.resource.data);
+        }
+      }
+    }
+
+    match /progress/{progressId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isValidProgress(request.resource.data);
+      allow update: if isAuthenticated() && isValidProgress(request.resource.data) && isOwner(resource.data.userId);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+  }
+}

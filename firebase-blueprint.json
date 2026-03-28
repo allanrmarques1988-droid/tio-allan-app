@@ -1,0 +1,90 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and role information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique identifier for the user." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "displayName": { "type": "string", "description": "The user's display name." },
+        "role": { "type": "string", "enum": ["admin", "member"], "description": "The user's role in the club." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user profile was created." }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "A training course or program.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "The title of the course." },
+        "description": { "type": "string", "description": "A brief description of the course." },
+        "thumbnailUrl": { "type": "string", "format": "uri", "description": "URL to the course thumbnail image." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the course was created." }
+      },
+      "required": ["title", "description"]
+    },
+    "Module": {
+      "title": "Module",
+      "description": "A module within a course.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string", "description": "The ID of the parent course." },
+        "title": { "type": "string", "description": "The title of the module." },
+        "order": { "type": "integer", "description": "The display order of the module." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the module was created." }
+      },
+      "required": ["courseId", "title", "order"]
+    },
+    "Lesson": {
+      "title": "Lesson",
+      "description": "A specific video lesson or training session.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string", "description": "The ID of the parent course." },
+        "moduleId": { "type": "string", "description": "The ID of the parent module." },
+        "title": { "type": "string", "description": "The title of the lesson." },
+        "videoUrl": { "type": "string", "format": "uri", "description": "URL to the video content." },
+        "description": { "type": "string", "description": "A description of the lesson content." },
+        "order": { "type": "integer", "description": "The display order of the lesson." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the lesson was created." }
+      },
+      "required": ["courseId", "moduleId", "title", "videoUrl", "order"]
+    },
+    "Progress": {
+      "title": "Progress",
+      "description": "Tracks user progress through lessons.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The ID of the user." },
+        "lessonId": { "type": "string", "description": "The ID of the lesson." },
+        "courseId": { "type": "string", "description": "The ID of the course." },
+        "completedAt": { "type": "string", "format": "date-time", "description": "When the lesson was completed." }
+      },
+      "required": ["userId", "lessonId", "courseId", "completedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles."
+    },
+    "/courses/{courseId}": {
+      "schema": "Course",
+      "description": "Collection of available courses."
+    },
+    "/courses/{courseId}/modules/{moduleId}": {
+      "schema": "Module",
+      "description": "Modules within a specific course."
+    },
+    "/courses/{courseId}/modules/{moduleId}/lessons/{lessonId}": {
+      "schema": "Lesson",
+      "description": "Lessons within a specific module."
+    },
+    "/progress/{progressId}": {
+      "schema": "Progress",
+      "description": "User progress tracking."
+    }
+  }
+}
