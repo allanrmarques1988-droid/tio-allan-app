@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Painel de Upload - Tio Allan</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; padding: 20px; text-align: center; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 15px; max-width: 400px; margin: auto; border: 1px solid #333; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        button { background: #e91e63; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        progress { width: 100%; height: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Upload de Aulas</h2>
+    <input type="text" id="aulaTitulo" placeholder="Nome da Aula">
+    <input type="text" id="aulaModulo" placeholder="Módulo (ex: Comece Aqui)">
+    <input type="file" id="videoFile" accept="video/mp4">
+    <br><br>
+    <button onclick="fazerUpload()" id="btnUpload">POSTAR VÍDEO AGORA</button>
+    <p id="status"></p>
+    <progress id="progressBar" value="0" max="100" style="display:none;"></progress>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // ESSES DADOS VOCÊ PEGA NO CONSOLE DO FIREBASE
+  const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_PROJETO.firebaseapp.com",
+    projectId: "SEU_PROJETO",
+    storageBucket: "SEU_PROJETO.appspot.com",
+    messagingSenderId: "ID",
+    appId: "ID_DO_APP"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+  const db = getFirestore(app);
+
+  window.fazerUpload = async function() {
+    const file = document.getElementById('videoFile').files[0];
+    const titulo = document.getElementById('aulaTitulo').value;
+    const modulo = document.getElementById('aulaModulo').value;
+    const status = document.getElementById('status');
+    const progressBar = document.getElementById('progressBar');
+
+    if (!file || !titulo) return alert("Tio, falta escolher o vídeo ou dar um título!");
+
+    const storageRef = ref(storage, 'cursos/' + file.name);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    progressBar.style.display = 'block';
+
+    uploadTask.on('state_changed', 
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        progressBar.value = progress;
+        status.innerText = "Subindo vídeo: " + Math.round(progress) + "%";
+      }, 
+      (error) => { status.innerText = "Erro: " + error.message; }, 
+      async () => {
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        await addDoc(collection(db, "aulas"), {
+          titulo: titulo,
+          modulo: modulo,
+          url: downloadURL,
+          data: new Date()
+        });
+        status.innerText = "✅ VÍDEO NO AR!";
+        alert("Pronto! Seus alunos já podem ver.");
+      }
+    );
+  }
+</script>
+</body>
+</html>
