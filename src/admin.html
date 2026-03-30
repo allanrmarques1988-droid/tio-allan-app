@@ -1,26 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Painel de Upload - Tio Allan</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Tio Allan</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; padding: 20px; text-align: center; }
-        .card { background: #1e1e1e; padding: 20px; border-radius: 15px; max-width: 400px; margin: auto; border: 1px solid #333; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
-        button { background: #e91e63; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        progress { width: 100%; height: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 450px; border: 1px solid #334155; text-align: center; }
+        h2 { color: #38bdf8; margin-bottom: 10px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
+        button { width: 100%; background: #0ea5e9; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background: #0284c7; }
+        #status { margin-top: 15px; font-size: 14px; color: #94a3b8; }
+        progress { width: 100%; height: 20px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Upload de Aulas</h2>
-    <input type="text" id="aulaTitulo" placeholder="Nome da Aula">
-    <input type="text" id="aulaModulo" placeholder="Módulo (ex: Comece Aqui)">
+<div class="container">
+    <h2>🚀 Painel do Tio Allan</h2>
+    <p>Upload direto para o App de Treinamento</p>
+    
+    <input type="text" id="aulaTitulo" placeholder="Nome da Aula (Ex: Aula 01)">
+    <input type="text" id="aulaModulo" placeholder="Módulo (Ex: Mentalidade Elite)">
+    
+    <label style="display:block; text-align:left; margin-top:10px; font-size:12px;">Selecione o Vídeo:</label>
     <input type="file" id="videoFile" accept="video/mp4">
-    <br><br>
-    <button onclick="fazerUpload()" id="btnUpload">POSTAR VÍDEO AGORA</button>
-    <p id="status"></p>
+    
+    <button onclick="fazerUpload()" id="btnUpload">PUBLICAR AGORA</button>
+    
     <progress id="progressBar" value="0" max="100" style="display:none;"></progress>
+    <p id="status"></p>
 </div>
 
 <script type="module">
@@ -28,14 +38,14 @@
   import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
   import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // ESSES DADOS VOCÊ PEGA NO CONSOLE DO FIREBASE
+  // Configurações do Tio Allan (Já integradas!)
   const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_PROJETO.firebaseapp.com",
-    projectId: "SEU_PROJETO",
-    storageBucket: "SEU_PROJETO.appspot.com",
-    messagingSenderId: "ID",
-    appId: "ID_DO_APP"
+    apiKey: "AIzaSyBXWpcR-QsQqiy7pWaa_osqVha_nRozLJk",
+    authDomain: "gen-lang-client-0897528392.firebaseapp.com",
+    projectId: "gen-lang-client-0897528392",
+    storageBucket: "gen-lang-client-0897528392.firebasestorage.app",
+    messagingSenderId: "266354266727",
+    appId: "1:266354266727:web:83e892bae61f31b858fac2"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -48,31 +58,46 @@
     const modulo = document.getElementById('aulaModulo').value;
     const status = document.getElementById('status');
     const progressBar = document.getElementById('progressBar');
+    const btn = document.getElementById('btnUpload');
 
-    if (!file || !titulo) return alert("Tio, falta escolher o vídeo ou dar um título!");
+    if (!file || !titulo) {
+        alert("Preencha o título e escolha o vídeo!");
+        return;
+    }
 
-    const storageRef = ref(storage, 'cursos/' + file.name);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
+    btn.disabled = true;
+    btn.innerText = "Subindo vídeo...";
     progressBar.style.display = 'block';
+
+    const storageRef = ref(storage, 'cursos/' + Date.now() + "_" + file.name);
+    const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on('state_changed', 
       (snapshot) => {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         progressBar.value = progress;
-        status.innerText = "Subindo vídeo: " + Math.round(progress) + "%";
+        status.innerText = "Enviando para o Google: " + Math.round(progress) + "%";
       }, 
-      (error) => { status.innerText = "Erro: " + error.message; }, 
+      (error) => { 
+        alert("Erro no upload: " + error.message);
+        btn.disabled = false;
+      }, 
       async () => {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        await addDoc(collection(db, "aulas"), {
-          titulo: titulo,
-          modulo: modulo,
-          url: downloadURL,
-          data: new Date()
-        });
-        status.innerText = "✅ VÍDEO NO AR!";
-        alert("Pronto! Seus alunos já podem ver.");
+        try {
+            await addDoc(collection(db, "aulas"), {
+              titulo: titulo,
+              modulo: modulo,
+              url: downloadURL,
+              data: new Date().toISOString()
+            });
+            status.innerHTML = "<b style='color:#4ade80'>✅ VÍDEO PUBLICADO!</b>";
+            alert("Aula enviada com sucesso!");
+        } catch (e) {
+            alert("Erro ao salvar dados: " + e.message);
+        }
+        btn.disabled = false;
+        btn.innerText = "PUBLICAR OUTRO";
       }
     );
   }
