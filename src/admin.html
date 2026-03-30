@@ -3,103 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - Tio Allan</title>
+    <title>Painel Expresso - Tio Allan</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 450px; border: 1px solid #334155; text-align: center; }
-        h2 { color: #38bdf8; margin-bottom: 10px; }
+        .container { background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 400px; border: 1px solid #334155; text-align: center; }
+        h2 { color: #38bdf8; margin-top: 0; }
         input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
-        button { width: 100%; background: #0ea5e9; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button:hover { background: #0284c7; }
-        #status { margin-top: 15px; font-size: 14px; color: #94a3b8; }
-        progress { width: 100%; height: 20px; margin-top: 10px; }
+        button { width: 100%; background: #22c55e; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background: #16a34a; }
+        #status { margin-top: 15px; font-weight: bold; color: #4ade80; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🚀 Painel do Tio Allan</h2>
-    <p>Upload direto para o App de Treinamento</p>
+    <h2>🚀 Postar Aula Agora</h2>
+    <p>Cole o link do seu vídeo (YouTube/Drive)</p>
     
-    <input type="text" id="aulaTitulo" placeholder="Nome da Aula (Ex: Aula 01)">
-    <input type="text" id="aulaModulo" placeholder="Módulo (Ex: Mentalidade Elite)">
+    <input type="text" id="aulaTitulo" placeholder="Título da Aula (Ex: Aula 01)">
+    <input type="text" id="aulaModulo" placeholder="Módulo (Ex: Mentalidade)">
+    <input type="text" id="aulaUrl" placeholder="Link do Vídeo (URL)">
     
-    <label style="display:block; text-align:left; margin-top:10px; font-size:12px;">Selecione o Vídeo:</label>
-    <input type="file" id="videoFile" accept="video/mp4">
-    
-    <button onclick="fazerUpload()" id="btnUpload">PUBLICAR AGORA</button>
-    
-    <progress id="progressBar" value="0" max="100" style="display:none;"></progress>
+    <button onclick="postarAula()" id="btnPostar">LIBERAR NO APP AGORA</button>
     <p id="status"></p>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
   import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // Configurações do Tio Allan (Já integradas!)
+  // Suas chaves configuradas (gen-lang-client-0897528392)
   const firebaseConfig = {
     apiKey: "AIzaSyBXWpcR-QsQqiy7pWaa_osqVha_nRozLJk",
     authDomain: "gen-lang-client-0897528392.firebaseapp.com",
     projectId: "gen-lang-client-0897528392",
-    storageBucket: "gen-lang-client-0897528392.firebasestorage.app",
-    messagingSenderId: "266354266727",
     appId: "1:266354266727:web:83e892bae61f31b858fac2"
   };
 
   const app = initializeApp(firebaseConfig);
-  const storage = getStorage(app);
   const db = getFirestore(app);
 
-  window.fazerUpload = async function() {
-    const file = document.getElementById('videoFile').files[0];
+  window.postarAula = async function() {
     const titulo = document.getElementById('aulaTitulo').value;
     const modulo = document.getElementById('aulaModulo').value;
+    const url = document.getElementById('aulaUrl').value;
     const status = document.getElementById('status');
-    const progressBar = document.getElementById('progressBar');
-    const btn = document.getElementById('btnUpload');
+    const btn = document.getElementById('btnPostar');
 
-    if (!file || !titulo) {
-        alert("Preencha o título e escolha o vídeo!");
+    if (!titulo || !url) {
+        alert("Tio, falta o título ou o link do vídeo!");
         return;
     }
 
     btn.disabled = true;
-    btn.innerText = "Subindo vídeo...";
-    progressBar.style.display = 'block';
+    btn.innerText = "Publicando...";
 
-    const storageRef = ref(storage, 'cursos/' + Date.now() + "_" + file.name);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    try {
+        // Isso envia os dados para a coleção 'aulas' que seu app lê
+        await addDoc(collection(db, "aulas"), {
+          titulo: titulo,
+          modulo: modulo,
+          url: url,
+          dataEnvio: new Date().toISOString()
+        });
 
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        progressBar.value = progress;
-        status.innerText = "Enviando para o Google: " + Math.round(progress) + "%";
-      }, 
-      (error) => { 
-        alert("Erro no upload: " + error.message);
-        btn.disabled = false;
-      }, 
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        try {
-            await addDoc(collection(db, "aulas"), {
-              titulo: titulo,
-              modulo: modulo,
-              url: downloadURL,
-              data: new Date().toISOString()
-            });
-            status.innerHTML = "<b style='color:#4ade80'>✅ VÍDEO PUBLICADO!</b>";
-            alert("Aula enviada com sucesso!");
-        } catch (e) {
-            alert("Erro ao salvar dados: " + e.message);
-        }
-        btn.disabled = false;
-        btn.innerText = "PUBLICAR OUTRO";
-      }
-    );
+        status.innerText = "✅ SUCESSO! AULA NO AR.";
+        alert("Publicado com sucesso!");
+        
+        // Limpa os campos
+        document.getElementById('aulaTitulo').value = "";
+        document.getElementById('aulaUrl').value = "";
+    } catch (e) {
+        alert("Erro! Verifique as Rules do Firestore!");
+        console.error(e);
+    }
+    
+    btn.disabled = false;
+    btn.innerText = "LIBERAR NO APP AGORA";
   }
 </script>
 </body>
