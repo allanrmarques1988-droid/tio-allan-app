@@ -1,7 +1,7 @@
 import React from 'react';
 import ProfileHeader from '../components/ProfileHeader';
 import { useAuth } from '../components/AuthContext';
-import { Play, Users, Share2, Instagram, MessageCircle, Music2, Rocket, Flame, TrendingUp, MessageSquare, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { Play, Users, Share2, Instagram, MessageCircle, Music2, Rocket, Flame, TrendingUp, MessageSquare, ExternalLink, CheckCircle2, QrCode } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 
@@ -31,21 +31,30 @@ const Home: React.FC = () => {
 
         {/* Section 2: Main Buttons */}
         <div className="grid grid-cols-1 gap-4 md:gap-6 max-w-md mx-auto w-full">
+          
+          {/* NOVO BOTÃO: QUERO SER ELITE (PAGAMENTO) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <Link 
-              to="/lessons" 
-              className="gold-button w-full flex items-center justify-center gap-4 py-6 md:py-10 text-xl md:text-2xl font-black italic shadow-[0_20px_50px_rgba(255,184,0,0.3)] border-2 border-white/20"
+              to="/checkout/pix" 
+              className="w-full bg-gradient-to-r from-tiktok-purple to-tiktok-cyan p-[2px] rounded-2xl block shadow-[0_0_30px_rgba(160,15,255,0.4)]"
             >
-              🎥 ACESSAR VIDEOAULAS
+              <div className="bg-premium-black hover:bg-transparent transition-colors rounded-[14px] py-6 md:py-8 flex flex-col items-center justify-center gap-2">
+                <div className="flex items-center gap-3">
+                   <QrCode className="text-tiktok-cyan w-6 h-6 md:w-8 md:h-8 animate-pulse" />
+                   <span className="text-xl md:text-2xl font-black italic uppercase tracking-tighter">Quero ser Elite</span>
+                </div>
+                <span className="text-[10px] font-black bg-white text-black px-2 py-0.5 rounded italic">APENAS R$ 68,50</span>
+              </div>
             </Link>
           </motion.div>
 
+          {/* ACESSAR VIDEOAULAS */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -53,25 +62,42 @@ const Home: React.FC = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
+            <Link 
+              to="/lessons" 
+              className="gold-button w-full flex items-center justify-center gap-4 py-6 md:py-8 text-xl md:text-2xl font-black italic shadow-[0_20px_50px_rgba(255,184,0,0.2)] border-2 border-white/10"
+            >
+              🎥 ACESSAR VIDEOAULAS
+            </Link>
+          </motion.div>
+
+          {/* COMUNIDADE */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
             <button 
               onClick={() => document.getElementById('community-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full premium-card p-6 md:p-10 flex items-center justify-center gap-4 text-xl md:text-2xl font-black uppercase italic hover:bg-gold/10 transition-all border-2 border-gold/30 shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
+              className="w-full premium-card p-6 md:p-8 flex items-center justify-center gap-4 text-xl md:text-2xl font-black uppercase italic hover:bg-gold/10 transition-all border-2 border-gold/30"
             >
               👥 COMUNIDADE & REDES
             </button>
           </motion.div>
         </div>
 
-        {/* NEW SECTION: MINHAS REDES & COMUNIDADE */}
+        {/* RESTANTE DO CÓDIGO (REDES E GRUPO VIP) MANTIDO... */}
         <div id="community-section" className="space-y-16 pt-8">
-          <div className="text-center space-y-2">
+           {/* ... conteúdo das redes sociais e grupo VIP ... */}
+           {/* (O restante permanece igual ao seu arquivo original) */}
+           <div className="text-center space-y-2">
             <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter">
               MINHAS REDES & <span className="text-gold">COMUNIDADE</span>
             </h2>
             <div className="h-1 w-24 bg-gold mx-auto rounded-full" />
           </div>
 
-          {/* SEÇÃO 1: REDES SOCIAIS */}
           <div className="space-y-8">
             <div className="text-center space-y-2">
               <h3 className="text-2xl font-black uppercase italic flex items-center justify-center gap-3">
@@ -133,14 +159,12 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          {/* SEÇÃO 2: GRUPO VIP */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="premium-card p-8 md:p-12 relative overflow-hidden border-gold/30 bg-gradient-to-br from-gold/10 to-transparent"
           >
-            {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-gold/10 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center relative z-10">
@@ -192,7 +216,7 @@ const Home: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Section 8: Rodapé */}
+        {/* Rodapé */}
         <footer className="text-center py-8 space-y-4">
           <div className="h-px bg-white/5 w-full mb-8" />
           <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black">
