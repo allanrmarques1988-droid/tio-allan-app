@@ -3,17 +3,29 @@
 
 @theme {
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  
+  /* NOVAS CORES ESTILO TIKTOK NEON */
+  --color-tiktok-purple: #7011d1;  /* Roxo Principal TikTok */
+  --color-tiktok-cyan: #19daff;    /* Ciano Secundário TikTok */
+  --color-tiktok-black: #050505;   /* Fundo Preto Profundo */
+  
+  /* REMOVENDO O DOURADO PARA O NOVO ESTILO */
   --color-gold: #FFD700;
   --color-gold-dark: #B8860B;
-  --color-premium-black: #050505;
-  --color-premium-blue: #0A0F1E;
 }
 
 @layer base {
   body {
-    @apply bg-premium-black text-white font-sans overflow-x-hidden;
+    @apply bg-tiktok-black text-white font-sans overflow-x-hidden;
+    
+    /* TRUQUE DA MARCA D'ÁGUA SUBLIMINAR DO TIKTOK (5% de Opacidade) */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M448 209.9a210.1 210.1 0 0 1 -122.8-39.3V349.4A162.6 162.6 0 1 1 185 188.3V278.2a74.6 74.6 0 1 0 52.2 71.2V0l88 0a121.2 121.2 0 0 0 1.9 22.2h0A122.2 122.2 0 0 0 381 102.4a121.4 121.4 0 0 0 67 20.1z" fill="%23ffffff22"/></svg>');
+    background-repeat: no-repeat;
+    background-position: calc(100% + 50px) center; /* Logo maior, cortada, no canto */
+    background-size: 80% auto; /* Bem grande para ficar de fundo */
+    opacity: 1; /* O SVG já tem 13% de opacidade no fill */
   }
-  
+
   img {
     @apply max-w-full h-auto;
   }
@@ -21,12 +33,38 @@
   h1, h2, h3, h4, h5, h6 {
     @apply break-words;
   }
+  
+  /* Ajuste no título principal para dar o Neon Ciano */
+  h1 {
+    color: var(--color-tiktok-cyan);
+    text-shadow: 0 0 15px rgba(25, 218, 255, 0.5);
+  }
 }
 
+/* CARDS NOVO ESTILO (PREMIU CARD) */
 .premium-card {
-  @apply bg-white/5 border border-white/10 rounded-[32px] backdrop-blur-xl shadow-2xl shadow-black/50;
+  /* Fundo preto brilhante com uma borda sutil de ciano */
+  @apply bg-white/3 border border-tiktok-cyan/15 rounded-[24px] backdrop-blur-xl shadow-2xl shadow-tiktok-purple/10 p-6;
+  transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
-.gold-button {
-  @apply bg-gold text-black font-black uppercase tracking-tighter py-4 px-8 rounded-2xl hover:bg-gold-dark transition-all active:scale-[0.98] shadow-lg shadow-gold/20;
+.premium-card:hover {
+  transform: translateY(-5px);
+  @apply border-tiktok-cyan/40; /* Brilha mais no hover */
+}
+
+/* BOTÃO ESTILO TIKTOK ROXO (GOLD BUTTON -> TIKTOK BUTTON) */
+.gold-button, .tiktok-button {
+  /* Roxo Principal TikTok com transição para Ciano no Hover */
+  @apply bg-tiktok-purple text-white font-black uppercase tracking-tighter py-4 px-8 rounded-full shadow-lg shadow-tiktok-purple/30;
+  transition: all 0.3s ease;
+}
+
+.gold-button:hover, .tiktok-button:hover {
+  @apply bg-tiktok-cyan text-black scale-105 shadow-xl shadow-tiktok-cyan/30;
+}
+
+/* Player de Vídeo */
+iframe {
+  @apply rounded-xl border-2 border-tiktok-purple/30 aspect-video;
 }
