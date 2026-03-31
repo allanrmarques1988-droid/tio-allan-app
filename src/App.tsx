@@ -12,13 +12,14 @@ import VideoLessons from './pages/VideoLessons';
 import CourseView from './pages/CourseView';
 import LessonView from './pages/LessonView';
 import AdminPanel from './pages/AdminPanel';
+import PixPayment from './pages/PixPayment'; // Importação da nova página
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({ children, adminOnly }) => {
   const { user, loading, isAdmin } = useAuth();
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-premium-black">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tiktok-purple"></div>
     </div>
   );
   
@@ -34,10 +35,19 @@ function AppRoutes() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/lessons" element={<VideoLessons />} />
         <Route path="/course/:courseId" element={<CourseView />} />
         <Route path="/course/:courseId/lesson/:lessonId" element={<LessonView />} />
-        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/checkout/pix" element={<PixPayment />} /> {/* Rota do seu pagamento */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute adminOnly>
+              <AdminPanel />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>
@@ -53,4 +63,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-
