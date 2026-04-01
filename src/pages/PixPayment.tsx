@@ -17,7 +17,7 @@ const PixPayment: React.FC = () => {
 
   const handleWhatsAppRedirect = () => {
     const message = encodeURIComponent("Olá Tio Allan! Acabei de realizar o pagamento do curso Elite do Crescimento. Segue o comprovante em anexo.");
-    window.open(`https://wa.me/5542991054455?text=${message}`, '_blank');
+    window.open(`https://wa.me/5542984141259?text=${message}`, '_blank');
   };
 
   return (
