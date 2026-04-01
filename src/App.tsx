@@ -9,23 +9,14 @@ import LessonView from './pages/LessonView';
 import AdminPanel from './pages/AdminPanel';
 import PixPayment from './pages/PixPayment';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({ children, adminOnly }) => {
-  const { user, loading, isAdmin } = useAuth();
-  const hasPaid = localStorage.getItem('elite_access') === 'true';
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  // O sistema só libera se o 'access_key' no navegador for igual à sua senha secreta
+  const hasAccess = localStorage.getItem('access_key') === 'ELITE2026'; // Mude a senha aqui se quiser
 
   if (loading) return <div className="bg-premium-black min-h-screen" />;
-  
-  // 1. Se não está logado, manda pro Login (Ninguém vê nada sem conta)
   if (!user) return <Navigate to="/login" replace />;
-
-  // 2. Se for Admin, libera tudo direto
-  if (isAdmin) return <>{children}</>;
-
-  // 3. Se for usuário comum e NÃO tem o ticket de pagamento, manda pro Pix
-  if (!hasPaid) return <Navigate to="/checkout/pix" replace />;
-
-  // 4. Proteção extra para área Admin
-  if (adminOnly && !isAdmin) return <Navigate to="/" replace />;
+  if (!hasAccess) return <Navigate to="/checkout/pix" replace />;
 
   return <>{children}</>;
 };
@@ -35,19 +26,14 @@ function AppRoutes() {
     <div className="min-h-screen bg-premium-black">
       <Navbar />
       <Routes>
-        {/* Rota inicial sempre será o Pix para quem não tem o "ticket" */}
         <Route path="/" element={<PixPayment />} />
         <Route path="/login" element={<Login />} />
         <Route path="/checkout/pix" element={<PixPayment />} />
-
-        {/* Todas as rotas abaixo agora estão "Blindadas" */}
         <Route path="/dashboard" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/lessons" element={<ProtectedRoute><VideoLessons /></ProtectedRoute>} />
         <Route path="/course/:courseId" element={<ProtectedRoute><CourseView /></ProtectedRoute>} />
         <Route path="/course/:courseId/lesson/:lessonId" element={<ProtectedRoute><LessonView /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPanel /></ProtectedRoute>} />
-
-        {/* Qualquer outro link manda de volta pro início */}
+        <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
@@ -56,10 +42,6 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </AuthProvider>
+    <AuthProvider><Router><AppRoutes /></Router></AuthProvider>
   );
 }
