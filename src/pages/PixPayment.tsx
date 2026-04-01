@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, Copy, QrCode, Smartphone, ShieldCheck, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Navbar from '../components/Navbar';
+import { useNavigate } from 'react-router-dom';
 
 const PixPayment: React.FC = () => {
   const [copied, setCopied] = useState(false);
+  const navigate = useNavigate();
   
   // Seus dados reais de pagamento
   const pixCode = "00020101021126330014br.gov.bcb.pix011106807165994520400005303986540568.505802BR5921ALLAN RODRIGO MARQUES6009SAO PAULO622905251KN347P9HYSHBR57XTYQDNNT76304D001"; 
+
+  // SENSOR DE ACESSO: Se o aluno já pagou antes, ele não vê essa tela e vai direto para as aulas
+  useEffect(() => {
+    const hasPaid = localStorage.getItem('elite_access') === 'true';
+    if (hasPaid) {
+      navigate('/dashboard'); 
+    }
+  }, [navigate]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(pixCode);
@@ -15,20 +25,20 @@ const PixPayment: React.FC = () => {
     setTimeout(() => setCopied(false), 3000);
   };
 
-  // ESTA FUNÇÃO LIBERA O ACESSO E ABRE O WHATSAPP
+  // LIBERA O ACESSO, ABRE WHATSAPP E REDIRECIONA
   const handleConfirmAndAccess = () => {
-    // 1. Cria o "ticket" de acesso no navegador do aluno
+    // 1. Cria o "ticket" de acesso no navegador
     localStorage.setItem('elite_access', 'true');
 
-    // 2. Prepara a mensagem do WhatsApp (Número: 42 98414-1259)
+    // 2. Prepara a mensagem do WhatsApp (Número Corrigido)
     const message = encodeURIComponent("Olá Tio Allan! Acabei de realizar o pagamento do Elite do Crescimento. Segue o comprovante para conferência.");
     const whatsappUrl = `https://wa.me/5542984141259?text=${message}`;
 
     // 3. Abre o WhatsApp em uma nova aba
     window.open(whatsappUrl, '_blank');
 
-    // 4. Redireciona o usuário para a Home do App (que agora estará liberada)
-    window.location.href = "/";
+    // 4. Manda o aluno para dentro do App
+    navigate('/dashboard');
   };
 
   return (
