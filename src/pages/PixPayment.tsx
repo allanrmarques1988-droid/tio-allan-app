@@ -6,7 +6,7 @@ import Navbar from '../components/Navbar';
 const PixPayment: React.FC = () => {
   const [copied, setCopied] = useState(false);
   
-  // Seus dados reais de pagamento atualizados
+  // Seus dados reais de pagamento
   const pixCode = "00020101021126330014br.gov.bcb.pix011106807165994520400005303986540568.505802BR5921ALLAN RODRIGO MARQUES6009SAO PAULO622905251KN347P9HYSHBR57XTYQDNNT76304D001"; 
 
   const handleCopy = () => {
@@ -15,9 +15,20 @@ const PixPayment: React.FC = () => {
     setTimeout(() => setCopied(false), 3000);
   };
 
-  const handleWhatsAppRedirect = () => {
-    const message = encodeURIComponent("Olá Tio Allan! Acabei de realizar o pagamento do curso Elite do Crescimento. Segue o comprovante em anexo.");
-    window.open(`https://wa.me/5542984141259?text=${message}`, '_blank');
+  // ESTA FUNÇÃO LIBERA O ACESSO E ABRE O WHATSAPP
+  const handleConfirmAndAccess = () => {
+    // 1. Cria o "ticket" de acesso no navegador do aluno
+    localStorage.setItem('elite_access', 'true');
+
+    // 2. Prepara a mensagem do WhatsApp (Número: 42 98414-1259)
+    const message = encodeURIComponent("Olá Tio Allan! Acabei de realizar o pagamento do Elite do Crescimento. Segue o comprovante para conferência.");
+    const whatsappUrl = `https://wa.me/5542984141259?text=${message}`;
+
+    // 3. Abre o WhatsApp em uma nova aba
+    window.open(whatsappUrl, '_blank');
+
+    // 4. Redireciona o usuário para a Home do App (que agora estará liberada)
+    window.location.href = "/";
   };
 
   return (
@@ -47,7 +58,7 @@ const PixPayment: React.FC = () => {
             <p className="text-4xl font-black text-tiktok-cyan italic">R$ 68,50</p>
           </div>
 
-          {/* QR Code Real gerado via API */}
+          {/* QR Code */}
           <div className="relative group mx-auto w-64 h-64 bg-white p-4 rounded-3xl shadow-[0_0_50px_rgba(160,15,255,0.2)]">
             <img 
               src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixCode)}`} 
@@ -88,14 +99,19 @@ const PixPayment: React.FC = () => {
             </AnimatePresence>
           </div>
 
-          {/* Botão WhatsApp Comprovante */}
-          <button 
-            onClick={handleWhatsAppRedirect}
-            className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white p-5 rounded-2xl flex items-center justify-center gap-3 font-black uppercase italic transition-all shadow-[0_10px_30px_rgba(37,211,102,0.2)]"
-          >
-            <MessageCircle className="w-6 h-6 fill-white" />
-            Enviar Comprovante no Whats
-          </button>
+          {/* BOTÃO PRINCIPAL: PAGA E LIBERA */}
+          <div className="space-y-4">
+            <button 
+              onClick={handleConfirmAndAccess}
+              className="w-full bg-tiktok-purple hover:bg-tiktok-purple/80 text-white p-5 rounded-2xl flex items-center justify-center gap-3 font-black uppercase italic transition-all shadow-[0_10px_30px_rgba(160,15,255,0.3)]"
+            >
+              <MessageCircle className="w-6 h-6 fill-white" />
+              JÁ PAGUEI! LIBERAR MEU ACESSO
+            </button>
+            <p className="text-gray-500 text-[10px] font-bold uppercase">
+              Ao clicar, você enviará o comprovante e entrará na comunidade.
+            </p>
+          </div>
 
           {/* Footer Seguro */}
           <div className="pt-6 border-t border-white/5 flex items-center justify-center gap-3 text-gray-500 font-bold uppercase text-[10px] tracking-widest">
@@ -103,12 +119,6 @@ const PixPayment: React.FC = () => {
             Recebedor: Allan Rodrigo Marques
           </div>
         </motion.div>
-
-        <div className="text-center mt-8 space-y-2">
-          <p className="text-gray-600 text-[10px] font-bold uppercase tracking-[0.2em]">
-            A liberação ocorre após a confirmação do comprovante.
-          </p>
-        </div>
       </main>
     </div>
   );
